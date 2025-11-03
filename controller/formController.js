@@ -1,17 +1,15 @@
 const form_router= require("express").Router()
-const uploadFiles = require("../multer")
 const verifyToken = require("../middlewares/authMiddleware")
 const formData = require("../model/formModel")
 const authData = require("../model/authModel")
 const authorizeRole = require("../middlewares/roleMiddleware")
 
 
-form_router.post("/create",uploadFiles,async(req,res)=>{
+form_router.post("/create",async(req,res)=>{
     try {
         const {userName, email,phone,experience,education} = req.body
         const skills = JSON.parse(req.body.skills)
         console.log(skills)
-        const resumePath = req.file?req.file.path:null
 
 const newApplication = new formData({
     userName,
@@ -20,7 +18,6 @@ const newApplication = new formData({
       skills,
       experience,
       education,
-      resume: resumePath,
 })
 
 await newApplication.save()

@@ -30,10 +30,6 @@ let formSchema = new mongoose.Schema({
         type:String,
         default:"Pending"
     },
-    resume:{
-        type:String,
-        required:true
-    },
     authUserId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"register",
