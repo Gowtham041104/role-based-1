@@ -1,50 +1,48 @@
-const form_router= require("express").Router()
-const verifyToken = require("../middlewares/authMiddleware")
-const formData = require("../model/formModel")
-const authData = require("../model/authModel")
-const authorizeRole = require("../middlewares/roleMiddleware")
+const form_router = require("express").Router();
+const verifyToken = require("../middlewares/authMiddleware");
+const formData = require("../model/formModel");
+const authData = require("../model/authModel");
+const authorizeRole = require("../middlewares/roleMiddleware");
 
+form_router.post("/create", async (req, res) => {
+  try {
+    const { userName, email, phone, skills, experience, education } = req.body;
 
-form_router.post("/create",async(req,res)=>{
-    try {
-        const {userName, email,phone,experience,education} = req.body
-        const skills = JSON.parse(req.body.skills)
-        console.log(skills)
-
-const newApplication = new formData({
-    userName,
+    const newApplication = new formData({
+      userName,
       email,
       phone,
       skills,
       experience,
       education,
-})
+    });
 
-await newApplication.save()
-        res.status(200).json({message:"Form submitted successfully"})
-    } catch (error) {
-        console.error("Error saving applicant:", error);
-        res.status(500).json({ error: "Server error" });
-    }
-
-})
-
-form_router.get("/get",verifyToken,authorizeRole("admin","executive"), async(req,res)=>{
-  try {
-    const findData = await formData.find()
-
-    if (findData) {
-        res.status(200).json(findData)
-    }
+    await newApplication.save();
+    res.status(200).json({ message: "Form submitted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    console.error("Error saving applicant:", error);
+    res.status(500).json({ error: "Server error" });
   }
-})
+});
 
+form_router.get(
+  "/get",
+  verifyToken,
+  authorizeRole("admin", "executive"),
+  async (req, res) => {
+    try {
+      const findData = await formData.find();
 
+      if (findData) {
+        res.status(200).json(findData);
+      }
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
 
-
-form_router.put("/update/:id",verifyToken, async (req, res) => {
+form_router.put("/update/:id", verifyToken, async (req, res) => {
   try {
     let param = req.params;
     let { email, status } = req.body;
@@ -56,7 +54,6 @@ form_router.put("/update/:id",verifyToken, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-   
     let findFormData = await formData.findOne({ _id: param.id });
     if (!findFormData) {
       return res.status(404).json({ message: "Form data not found" });
@@ -65,7 +62,6 @@ form_router.put("/update/:id",verifyToken, async (req, res) => {
     findFormData.authUserId = findAuthUser._id;
     findFormData.status = status;
     await findFormData.save();
-
 
     if (!Array.isArray(findAuthUser.formIds)) {
       findAuthUser.formIds = [];
@@ -76,19 +72,17 @@ form_router.put("/update/:id",verifyToken, async (req, res) => {
       await findAuthUser.save();
     }
 
-    res.status(200).json({ 
-      message: "Interview scheduled successfully", 
-      formData: findFormData,  
-      authUser: findAuthUser  
+    res.status(200).json({
+      message: "Interview scheduled successfully",
+      formData: findFormData,
+      authUser: findAuthUser,
     });
-
   } catch (error) {
-    console.error("Error:", error); 
-    res.status(500).json({ message: "Something went wrong", error: error.message });
+    console.error("Error:", error);
+    res
+      .status(500)
+      .json({ message: "Something went wrong", error: error.message });
   }
 });
 
-
-
-
-module.exports = form_router
+module.exports = form_router;
