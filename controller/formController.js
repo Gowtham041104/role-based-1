@@ -6,13 +6,29 @@ const authorizeRole = require("../middlewares/roleMiddleware");
 
 form_router.post("/create", async (req, res) => {
   try {
+    console.log("Incoming form data:", req.body);
+
     const { userName, email, phone, skills, experience, education } = req.body;
+
+    // Validation
+    if (!userName || !email || !phone) {
+      return res
+        .status(400)
+        .json({ error: "Name, email, and phone are required" });
+    }
+
+    // Ensure skills is an array
+    const formattedSkills = Array.isArray(skills)
+      ? skills
+      : typeof skills === "string"
+      ? skills.split(",").map((s) => s.trim())
+      : [];
 
     const newApplication = new formData({
       userName,
       email,
       phone,
-      skills,
+      skills: formattedSkills,
       experience,
       education,
     });
@@ -20,8 +36,8 @@ form_router.post("/create", async (req, res) => {
     await newApplication.save();
     res.status(200).json({ message: "Form submitted successfully" });
   } catch (error) {
-    console.error("Error saving applicant:", error);
-    res.status(500).json({ error: "Server error" });
+    console.error("Error saving applicant:", error.message);
+    res.status(500).json({ error: "Server error", details: error.message });
   }
 });
 
